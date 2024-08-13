@@ -1,0 +1,1 @@
+- This is a personal project which is like a educational platform for the people
