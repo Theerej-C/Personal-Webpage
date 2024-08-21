@@ -1,0 +1,44 @@
+# Python files
+*.pyc
+*.pyo
+*.pyd
+
+# Django files
+*.sqlite3
+db.sqlite3
+media/
+
+# IDE files
+.vscode/
+.pycharm/
+.idea/
+
+# Virtual environment files
+venv/
+env/
+*.env
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node.js files (if using npm or yarn)
+node_modules/
+
+# Coverage files
+coverage/
+.htmlcov/
+
+# Django debug toolbar files
+debug_toolbar/
+
+# Migrations files (if using Django 1.7 or earlier)
+*/migrations/*.pyc
+*/migrations/*.pyo
+*/__pycache__/
+
+# Static files (if using collectstatic)
+static/
