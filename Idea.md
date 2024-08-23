@@ -10,3 +10,7 @@
 
 - The courses should be freemium like free things are to be in youtube and the private things are to be in the website.
 - The courses which are pretty advanced are to be in the paid version so that morale of the product also should be
+
+## Focus:
+
+- First focus is to create a blogging platform
