@@ -8,8 +8,9 @@ class BlogPostCRUDAPI(APIView):
     authentication_classes=[TokenAuthentication]
     permission_classes=[permissions.IsAuthenticated]
     def get(self,request):
-        # Retrieve all blog posts
-        blog_posts = BlogModel.objects.all()
+        # Retrieve all blog for specific user
+        user_id = request.user.id
+        blog_posts = BlogModel.objects.filter(user_id=user_id)
         serializer = BlogSerializer(blog_posts, many=True)
         return Response(serializer.data)
     def post(self,request):
@@ -39,6 +40,23 @@ class BlogPostCRUDAPI(APIView):
             return Response({"message": "Blog post deleted successfully"})
         else:
             return Response({"message": "Blog post not found"})
+
+class BlogPostGlobalRetrival(APIView):
+    authentication_classes=[TokenAuthentication]
+    permission_classes=[permissions.IsAuthenticated]
+    def get(self,request):
+        data = BlogModel.objects.all()
+        serializer = BlogSerializer(data,many=True)
+        return Response(serializer.data)
+    def post(self,request):
+        data = request.data
+        try:
+            category_of_post = data['category']
+        except Exception as e:
+            return Response({"message": "Category is required"})
+        blogs = BlogModel.objects.filter(categories__name=category_of_post)
+        serializer = BlogSerializer(blogs,many=True)
+        return Response(serializer.data)
 
 class BlogPostComments(APIView):
     
@@ -82,4 +100,5 @@ class BlogPostComments(APIView):
             return Response({"message": "Comment not found"})
 blogpost_crud_api = BlogPostCRUDAPI.as_view()
 blogpost_comment_api = BlogPostComments.as_view()
+blogpost_retrival_global_api = BlogPostGlobalRetrival.as_view()
         
