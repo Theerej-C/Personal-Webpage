@@ -1,77 +1,61 @@
-from rest_framework.views import APIView
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from .serializers import BlogSerializer,CommentSerializer
-from .models import BlogModel,Comment
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from rest_framework import permissions
-class BlogPostCRUDAPI(APIView):
-    authentication_classes=[TokenAuthentication]
-    permission_classes=[permissions.IsAuthenticated]
-    def get(self,request):
-        # Retrieve all blog for specific user
-        user_id = request.user.id
-        blog_posts = BlogModel.objects.filter(user_id=user_id)
-        serializer = BlogSerializer(blog_posts, many=True)
-        return Response(serializer.data)
-    def post(self,request):
+from .serializers import BlogSerializer, CommentSerializer, TagSerializer, CategorySerializer
+from .models import BlogModel, Comment, Tag, Category
+
+class BlogViewSet(viewsets.ModelViewSet):
+    queryset = BlogModel.objects.all()
+    serializer_class = BlogSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return BlogModel.objects.filter(author_id=self.request.user.id)
+
+    def create(self, request):
         data = request.data
-        # content = data['content']
         data['author_id'] = request.user.id
         data['author'] = request.user.username
-        serializer = BlogSerializer(data=data)
-        if(serializer.is_valid()):
+        serializer = self.get_serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, pk=None):
+        blog_post = self.get_object()
+        serializer = self.get_serializer(blog_post, data=request.data)
+        if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors)
-    def update(self,request):
-         data = request.data
-         id = data['id']
-         blog_post = BlogModel.objects.get(id=id)
-         serializer = BlogSerializer(blog_post, data=data)
-         if(serializer.is_valid()):
-             serializer.save()
-             return Response(serializer.data)
-         return Response(serializer.errors)
-    def delete(self,request):
-        id = request.data['id']
-        blog_post = BlogModel.objects.get(id=id)
-        if (blog_post):
-            blog_post.delete()
-            return Response({"message": "Blog post deleted successfully"})
-        else:
-            return Response({"message": "Blog post not found"})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class BlogPostGlobalRetrival(APIView):
-    authentication_classes=[TokenAuthentication]
-    permission_classes=[permissions.IsAuthenticated]
-    def get(self,request):
-        data = BlogModel.objects.all()
-        serializer = BlogSerializer(data,many=True)
-        return Response(serializer.data)
-    def post(self,request):
-        data = request.data
-        try:
-            category_of_post = data['category']
-        except Exception as e:
-            return Response({"message": "Category is required"})
-        blogs = BlogModel.objects.filter(categories__name=category_of_post)
-        serializer = BlogSerializer(blogs,many=True)
-        return Response(serializer.data)
+    def destroy(self, request, pk=None):
+        blog_post = self.get_object()
+        blog_post.delete()
+        return Response({"message": "Blog post deleted successfully"})
 
-class BlogPostComments(APIView):
-    
-    authentication_classes=[TokenAuthentication]
-    permission_classes=[permissions.IsAuthenticated]
-    def get(self,request):
-        blog_id = request.query_params.get('id')
+class BlogPostGlobalViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = BlogModel.objects.all()
+    serializer_class = BlogSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        blog_id = self.request.query_params.get('blog_id')
         if blog_id:
-            blog = BlogModel.objects.get(id=blog_id)
-            comments = blog.comments.all()
-            serailizer = CommentSerializer(comments,many=True)
-            return Response(serailizer.data)
-        else:
-            return Response({"message": "Blog post id is required"})
-    def post(self, request):
+            return Comment.objects.filter(blog_id=blog_id)
+        return Comment.objects.all()
+
+    def create(self, request):
         data = request.data
         comment_content = data['content']
         comment = Comment(content=comment_content, author_id=request.user.id)
@@ -79,26 +63,64 @@ class BlogPostComments(APIView):
         blog_id = data['blog_id']
         blog = BlogModel.objects.get(id=blog_id)
         blog.comments.add(comment)
-        serializer = CommentSerializer(comment)
-        return Response(serializer.data)
-    def put(self,request):
-        comment_id = request.data['id']
-        comment = Comment.objects.get(id=comment_id)
-        data = request.data['content']
-        comment['content'] = data
-        serializer = CommentSerializer(comment,data=data)
+        serializer = self.get_serializer(comment)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def update(self, request, pk=None):
+        comment = self.get_object()
+        serializer = self.get_serializer(comment, data=request.data)
         if serializer.is_valid():
+            serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors)
-    def delete(self,request):
-        comment_id = request.data['id']
-        comment = Comment.objects.get(id=comment_id)
-        if comment:
-            comment.delete()
-            return Response({"message": "Comment deleted successfully"})
-        else:
-            return Response({"message": "Comment not found"})
-blogpost_crud_api = BlogPostCRUDAPI.as_view()
-blogpost_comment_api = BlogPostComments.as_view()
-blogpost_retrival_global_api = BlogPostGlobalRetrival.as_view()
-        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        comment = self.get_object()
+        comment.delete()
+        return Response({"message": "Comment deleted successfully"})
+
+class TagViewSet(viewsets.ModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        blog_id = self.request.query_params.get('blog_id')
+        if blog_id:
+            return Tag.objects.filter(blog_id=blog_id)
+        return Tag.objects.all()
+
+    def create(self, request):
+        data = request.data
+        tag_name = data['name']
+        tag = Tag(name=tag_name)
+        tag.save()
+        blog_id = data['blog_id']
+        blog = BlogModel.objects.get(id=blog_id)
+        blog.tags.add(tag)
+        serializer = self.get_serializer(tag)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        blog_id = self.request.query_params.get('blog_id')
+        if blog_id:
+            return Category.objects.filter(blog_id=blog_id)
+        return Category.objects.all()
+
+    def create(self, request):
+        data = request.data
+        category_name = data['name']
+        category = Category(name=category_name)
+        category.save()
+        blog_id = data['blog_id']
+        blog = BlogModel.objects.get(id=blog_id)
+        blog.categories.add(category)
+        serializer = self.get_serializer(category)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
