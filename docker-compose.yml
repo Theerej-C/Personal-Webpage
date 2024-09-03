@@ -24,7 +24,7 @@ services:
       - db
   nextjs:
     build: ./frontend/frontend-nextjs
-    command: npm run dev
+    # command: npm run dev
     volumes:
       - ./frontend/frontend-nextjs:/code
     ports:
