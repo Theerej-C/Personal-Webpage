@@ -31,8 +31,8 @@ class UserLoginView(APIView):
             return Response({'error':'Invalid username or password'})
 
 class UserTestAPI(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes=[TokenAuthentication]
+    # permission_classes = [permissions.IsAuthenticated]
+    # authentication_classes=[TokenAuthentication]
     def get(self,request):
         print(request.META)
         print(request.user)
