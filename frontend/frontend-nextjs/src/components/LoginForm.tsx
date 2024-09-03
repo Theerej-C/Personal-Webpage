@@ -6,10 +6,19 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Add your login logic here
-    console.log("Login attempted with:", username, password);
+    console.log("Hello");
+    await fetch('http://localhost:8000/user/test',{
+      method:'GET', 
+    }).then((response)=>{
+      return response.json();
+    }).then((data)=>{
+      console.log(data);
+    })
+    .catch((error)=>{
+      console.log(error);
+    })
   };
 
   return (

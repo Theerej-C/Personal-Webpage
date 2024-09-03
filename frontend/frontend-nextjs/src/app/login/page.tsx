@@ -13,7 +13,7 @@ const LoginPage = () => {
         <h1 className="text-3xl font-bold mb-4">Login</h1>
         <LoginForm />
         <p className="text-gray-700 text-sm">
-          Don't have an account? <Link href="/register">Register</Link>
+          Don&apos;t have an account? <Link href="/register">Register</Link>
         </p>
       </div>
     </div>
