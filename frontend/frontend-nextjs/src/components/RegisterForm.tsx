@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
 
 interface RegisterFormProps {
   // Add any props you want to pass to the component
@@ -12,10 +13,9 @@ const RegisterForm: React.FC<RegisterFormProps> = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string|null>(null);
-
+  const router = useRouter()
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     // Validate the form data
     if (!email || !username || !phone_number || !password || !confirmPassword) {
       setError('Please fill out all fields');
@@ -48,16 +48,22 @@ const RegisterForm: React.FC<RegisterFormProps> = () => {
       });
 
       const data = await response.json();
-
-      if (data.success) {
-        // Registration successful, redirect to login page or display a success message
-        console.log('Registration successful');
-      } else {
-        setError(data.error);
+      console.log(data);
+      if (response.ok) {
+        router.push('/dashboard');
+      }
+      else{
+        setError(`Registration failed: ${data.detail}`);
       }
     } catch (error) {
       setError('Error registering user');
     }
+    // setEmail('')
+    // setUsername('')
+    // setPhoneNumber('')
+    // setPassword('')
+    // setConfirmPassword('')
+    
   };
 
   return (
