@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 
 interface RegisterFormProps {
   // Add any props you want to pass to the component
@@ -12,7 +12,7 @@ const RegisterForm: React.FC<RegisterFormProps> = () => {
   const [phone_number, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string|null>(null);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter()
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -46,27 +46,31 @@ const RegisterForm: React.FC<RegisterFormProps> = () => {
           password,
         }),
       });
-
-      const data = await response.json();
-      console.log(data);
       if (response.ok) {
+        const data = await response.json();
+        console.log(data['Token']);
+        localStorage.setItem('user_token',data['Token']);
         router.push('/dashboard');
       }
-      else{
-        setError(`Registration failed: ${data.detail}`);
+      else if (response.status === 400) {
+        const data = await response.json();
+        setError(`Registration failed: ${data['username']}`);
+        alert(error)
       }
     } catch (error) {
-      setError('Error registering user');
+      setError('Registration Failed due to ' + error)
+      alert(error)
     }
+    // console.log(error);
     // setEmail('')
     // setUsername('')
     // setPhoneNumber('')
     // setPassword('')
-    // setConfirmPassword('')
-    
+    // setConfirmPassword('') 
   };
 
   return (
+    <Fragment>
     <form onSubmit={handleSubmit} className="mb-4">
       <label className="block mb-2 text-gray-700 font-bold">
         Email:
@@ -124,8 +128,8 @@ const RegisterForm: React.FC<RegisterFormProps> = () => {
       >
         Register
       </button>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
     </form>
+</Fragment>
   );
 };
 
