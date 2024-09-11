@@ -10,18 +10,18 @@ const Header: React.FC<HeaderProps> = () => {
       <nav className="flex justify-between w-full">
         <ul className="flex justify-between">
           <li className="mr-6">
-            <a href="#" className="text-gray-300 hover:text-white">
+            <a href="/" className="text-gray-300 hover:text-white">
               Home
             </a>
           </li>
           <li className="mr-6">
-            <a href="#" className="text-gray-300 hover:text-white">
-              About
+            <a href="/register" className="text-gray-300 hover:text-white">
+              Register
             </a>
           </li>
           <li>
-            <a href="#" className="text-gray-300 hover:text-white">
-              Contact
+            <a href="/login" className="text-gray-300 hover:text-white">
+              Login
             </a>
           </li>
         </ul>
