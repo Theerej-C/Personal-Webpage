@@ -1,32 +1,18 @@
-# Stage 1: Build and install dependencies
-FROM node:20.16 AS builder
+FROM node:20
 
-WORKDIR /code
+WORKDIR /app
 
-COPY ./package*.json .
+COPY package*.json ./
 
-RUN npm install --production
+RUN npm install
 
 COPY . .
 
-RUN npm run build
+RUN chown -R 1001:1001 . 
 
-# Remove unnecessary dependencies
-RUN npm prune
-
-# Stage 2: Create the final image
-FROM node:20.16
-
-WORKDIR /code
-
-# Copy the bundled code from Stage 1
-COPY --from=builder /code/.next/ ./.next/
-COPY --from=builder /code/public/ ./public/
-COPY --from=builder /code/node_modules/ ./node_modules/
-
-COPY next.config.mjs .
-COPY package.json .
+RUN useradd -ms /bin/false app  
+USER app
 
 EXPOSE 3000
 
-CMD [ "npm", "run", "dev" ] 
+CMD [ "npm", "run", "dev" ]

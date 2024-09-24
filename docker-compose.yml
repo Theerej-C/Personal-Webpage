@@ -3,15 +3,17 @@ version: "3.9"
 services:
   db:
     image: postgres
-    volumes:
-      - ./backend/django-backend/data/db:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: always
+
   web:
     build: ./backend/django-backend
-    command: python /code/personal_backend/manage.py runserver 0.0.0.0:8000
+    command: python ./personal_backend/manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend/django-backend:/code
     ports:
@@ -22,12 +24,18 @@ services:
       - POSTGRES_PASSWORD=postgres
     depends_on:
       - db
+    restart: always
+
   nextjs:
     build: ./frontend/frontend-nextjs
-    # command: npm run dev
+    command: npm run dev
     volumes:
       - ./frontend/frontend-nextjs:/code
     ports:
       - "3000:3000"
     depends_on:
       - web
+    restart: always
+
+volumes:
+  db-data:
