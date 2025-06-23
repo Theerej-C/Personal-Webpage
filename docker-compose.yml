@@ -25,17 +25,15 @@ services:
     depends_on:
       - db
     restart: always
-
-  nextjs:
-    build: ./frontend/frontend-nextjs
-    command: npm run dev
+  angular:
+    build: ./frontend/frontend-angular
+    command: ng serve --host 0.0.0.0
     volumes:
-      - ./frontend/frontend-nextjs:/code
+      - ./frontend/frontend-angular:/app
     ports:
-      - "3000:3000"
+      - "4200:4200"
     depends_on:
       - web
     restart: always
-
 volumes:
   db-data:
